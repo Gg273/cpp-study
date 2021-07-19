@@ -209,7 +209,7 @@ int main()
 //	*b = 7;
 ```
 
-*此时不可以通过解引用指针来改变变量`a`的数值，即第四行的代码会报错；*
+*此时不可以通过解引用指针来改变变量 `a`的数值，即第四行的代码会报错；*
 
 ```c++
 	const int a = 5;
@@ -218,7 +218,7 @@ int main()
 //	b = (int*)&a;
 ```
 
-*此时不可以改变指针`b`存储的地址变量，即第四行出错；*
+*此时不可以改变指针 `b`存储的地址变量，即第四行出错；*
 
 ```c++
 	const int a = 5;
@@ -227,7 +227,7 @@ int main()
 //	b = (int*)&a;
 ```
 
-*此时既不可以更改指针`b`中保存的地址，也不可以通过解引用指针来改变变量`a`的数值，即三四行都会报错；*
+*此时既不可以更改指针 `b`中保存的地址，也不可以通过解引用指针来改变变量 `a`的数值，即三四行都会报错；*
 
 `const`与引用
 
@@ -237,7 +237,7 @@ int main()
 //	b = 7;
 ```
 
-*不可以通过该`const`形容的应用改变变量`a`的数值；*
+*不可以通过该 `const`形容的应用改变变量`a`的数值；*
 
 **`const`关键字与`class`类和`method`方法**
 
@@ -259,8 +259,79 @@ public:
 };
 ```
 
-*注释掉的行中的代码不能使用，因为这个方法使用了`const`形容，所以不可以改变类中的变量；*
+*注释掉的行中的代码不能使用，因为这个方法使用了 `const`形容，所以不可以改变类中的变量；*
 
 ### 35.`mutable`关键字
 
-实际上有两种截然不同的用途，
+`mutable`实际上有两种截然不同的用途；
+
+在类、方法中和`const`搭配使用
+
+```c++
+#include <iostream>
+#include <string>
+
+class Entity
+{
+private:
+	std::string m_Name;
+	mutable int m_DebugCount = 0;
+public:
+	const std::string& GetName() const
+	{
+		m_DebugCount++;
+		return m_Name;
+	}
+};
+int main()
+{
+	const Entity e;
+	e.GetName();
+	std::cin.get();
+}
+```
+
+*这里的 `mutable`使得变量 `m_DebugCount`可以在这个方法 `GetName()`中改变；*
+
+在lambda中搭配使用
+
+```c++
+	int x = 8;
+	auto f = [=]() mutable
+	{
+        x++;
+		std::cout << x << std::endl;
+	};
+```
+
+这里使得传递到lambda中的变量可以改变；
+
+### 36.Constructive Member Initializer Lists（构造成员初始化列表）
+
+在构造函数中初始化我们的类成员函数，**强烈推荐使用这种方法来初始化成员；**
+
+```c++
+class Entity
+{
+private:
+    int m_Score
+	std::string m_Name;
+public:
+	Entity()
+		: m_Score(10),m_Name("Unknown")
+	{
+	}
+	Entity(const std::string& name)
+		: m_Name(name)
+	{
+	}
+	const std::string& GetName() const
+	{
+		return m_Name;
+	}
+};
+```
+
+*如果在类中有多个成员，那么需要按顺序来初始化成员；*
+
+### 37.Ternary Operators（三元运算符）
