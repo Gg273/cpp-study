@@ -83,7 +83,7 @@ int main()
 
 **这里创建的数组example和another基本是一样的，除了存在的时间，数组example在数组所在域结束就不存在了，而数组another会一直存在，需要用关键字`delete`进行删除；**
 
-C++库中有一种内置数据结构叫做标准数组，它具有边界检查，跟踪数组大小等优势所在；使用这个标准数组需要包含头文件`#include <array>`；
+*C++库中有一种内置数据结构叫做标准数组，它具有边界检查，跟踪数组大小等优势所在；使用这个标准数组需要包含头文件`#include <array>`；*
 
 代码示例：
 
@@ -104,3 +104,163 @@ int main()
 ```
 
 ### 32.Strings
+
+**字符串实际上是一组字符，字符是字母、数字、符号之类的；字符在C++中为char类型，而字符串在C++中基本上就是一个字符数组；**
+
+代码示例：
+
+```c++
+#include <iostream>
+
+int main()
+{
+	const char* name = "Cherno";
+	std::cout << name << std::endl;
+
+	std::cin.get();
+}
+```
+
+这里的字符串在存储在内存中实际上会在最后一位字符的后面再加上一个空字符`'\0'`，这样可以使得在输出整个字符串时知道字符串的结尾在哪；
+
+代码示例：
+
+```c++
+	const char name[10] = { 'C','h','e','r','n','o','\0','a','b','n' };
+	std::cout << name << std::endl;
+```
+
+这里的输出结果实际上为`Cherno`；
+
+**在C++标准库中有叫`string`的类，内包含一个标准字符串；**
+
+```c++
+#include <iostream>
+#include <string>
+
+int main()
+{
+	std::string name = std::string("Cherno") + " hello";
+	std::cout << name << std::endl;
+
+	std::cin.get();
+}
+```
+
+可以使用以上的类似代码使用标准字符串；
+
+### 33.String Literals（字符串字面量）
+
+字符串字面量基本就是在双引号中的字符，例如`"hello"`，它默认为`const char*`类型，总是存储在只可读的内存片段，不可以去更改其中的字符，末尾有一个空字符`\0`来表示字符串何时结束；
+
+```c++
+	const char* name = "Cherno";
+	name[2] = 'a';
+	char name2[] = "Cherno";
+	name2[2] = 'a';
+```
+
+第二行的代码是不会报错的，因为是一个`const char*`类型，但是第四行的不会报错，因为这里是复制一个`"Cherno"`的副本到数组中，所以可以对其中的字符进行更改；
+
+C++中还有其他的字符串类型；
+
+```c++
+	const char* name = u8"Cherno";
+	const wchar_t* name2 = L"Cherno";
+
+	const char16_t* name3 = u"Cherno";
+	const char32_t* name4 = U"Cherno";
+```
+
+默认`char`类型的前缀可以省略，但是其他字符串类型的前缀不可省略，因为在计算机中字符串字面量默认为8位的字符，而`char16_t`类型是字符占16位的字符串，`char32_t`类型是字符占32位的字符串，`wchar_t`类型的字符大小由编译器来决定；
+
+也可以使用前缀R来让字符串字面量占多行；
+
+```c++
+	const char* example = R"(hello
+world
+tomorrow
+will
+better)";
+```
+
+### 34.`Const`关键字
+
+可以声明整型为`const`，然后就是一个常量，此时不可更改这个整型的值
+
+```c++
+#include <iostream>
+#include <string>
+
+int main()
+{
+	const int a = 5;
+
+	std::cin.get();
+}
+```
+
+**`const`与指针一起用，有两种不同的用法，这两种用法可以结合起来使用**
+
+```c++
+	const int a = 5;
+	const int* b = new int;
+	b = &a;
+//	*b = 7;
+```
+
+*此时不可以通过解引用指针来改变变量`a`的数值，即第四行的代码会报错；*
+
+```c++
+	const int a = 5;
+	int* const b = new int;
+	*b = 7;
+//	b = (int*)&a;
+```
+
+*此时不可以改变指针`b`存储的地址变量，即第四行出错；*
+
+```c++
+	const int a = 5;
+	const int* const b = new int;
+//	*b = 7;
+//	b = (int*)&a;
+```
+
+*此时既不可以更改指针`b`中保存的地址，也不可以通过解引用指针来改变变量`a`的数值，即三四行都会报错；*
+
+`const`与引用
+
+```c++
+	int a = 8;
+	const int& b = a;
+//	b = 7;
+```
+
+*不可以通过该`const`形容的应用改变变量`a`的数值；*
+
+**`const`关键字与`class`类和`method`方法**
+
+```c++
+class Entity
+{
+public:
+	int m_X, m_Y;
+public:
+	int GetX() const
+	{
+//		m_X = 2;
+		return m_X;
+	}
+	int SetX(int x)
+	{
+		m_X = x;
+	}
+};
+```
+
+*注释掉的行中的代码不能使用，因为这个方法使用了`const`形容，所以不可以改变类中的变量；*
+
+### 35.`mutable`关键字
+
+实际上有两种截然不同的用途，
