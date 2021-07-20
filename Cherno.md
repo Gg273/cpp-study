@@ -335,3 +335,142 @@ public:
 *如果在类中有多个成员，那么需要按顺序来初始化成员；*
 
 ### 37.Ternary Operators（三元运算符）
+
+三元运算符实际上就是一种选择语句的语法糖，实际用法如下
+
+```c++
+#include <iostream>
+#include <string>
+
+static int s_Level = 1;
+static int s_Speed = 1;
+int main()
+{
+	s_Speed = s_Level > 5 ? 10 : 5;
+    
+	std::cin.get();
+}
+```
+
+等价于
+
+```c++
+	if (s_Level > 5)
+		s_Speed = 10;
+	else
+		s_Speed = 5;
+```
+
+三元运算符可以和条件选择语句一样嵌套使用，但是最好不要去嵌套使用，会导致语句复杂；
+
+### 38.实例化我们的类
+
+通常有两种选择去实例化类
+
+一、在stack（栈）中实例
+
+```c++
+#include <iostream>
+#include <string>
+
+class Entity
+{
+private:
+	std::string m_Name;
+public:
+	Entity() :m_Name("Unknown") {}
+	Entity(const std::string& name) :m_Name(name) {}
+
+	const std::string& GetName() const { return m_Name; }
+
+};
+int main()
+{
+	Entity entity("Cherno");
+	std::cout << entity.GetName() << std::endl;
+
+	std::cin.get();
+}
+```
+
+二、在heap（堆）中实例
+
+```c++
+	Entity* entity = new Entity("Cherno");
+	std::cout << entity->GetName() << std::endl;
+
+	delete entity;
+```
+
+通常在stack中创建对象比在heap中创建会快得多；
+
+怎么选择用哪种方法来实例化类？
+
+​	1.在类中的变量较多，占据的内存过大时在heap中实例化类，因为分配给stack的内存较小；
+
+​	2.在需要对象存在的作用域之外使用对象时在heap中实例化类；
+
+### 39.`new`关键字的语法
+
+`new`关键词使用时一定要搭配着`delete`使用；
+
+```c++
+	int* b = new int[10];
+	delete[] b;
+
+	Entity* entity = new Entity();
+	delete entity;
+```
+
+### 40.implicit conversion and the explicit keyword（隐式转换和显示关键字）
+
+在C++中允许编译器对代码执行一次隐式转换
+
+```c++
+#include <iostream>
+#include <string>
+
+class Entity
+{
+private:
+	std::string m_Name;
+	int m_Age;
+public:
+	Entity(int age) 
+		:m_Name("Unknown"),m_Age(age) {}
+
+	Entity(const std::string& name) 
+		:m_Name(name),m_Age(-1) {}
+};
+int main()
+{
+    Entity b(22);
+	Entity a("Cherno");
+
+	std::cin.get();
+}
+```
+
+上面中实例化对象是常用的，实际上这里就有一次隐式类型转换，这里`"Cherno"`是字面量，为字符串常量类型，不是`string`类型，这里隐式转换为了`string`类型；
+
+但是我们也可以通过明显的另一种方法去实例化对象
+
+```c++
+	Entity b = 22;
+	Entity a = "Cherno";
+```
+
+第一行代码中，整型隐式转换为了`Entity`类型；但是第二行代码中由于`"Cherno"`为字面量，需要通过先转换为`string`类型，才能继续转换为`Entity`类型，所以会出错，因为隐式转换超过了一次，需要把代码改成如下才成成功；
+
+```c++
+	Entity a = std:string("Cherno");
+```
+
+可以通过在类前面增加显示关键字`explicit`使得不能通过隐式转换实例化对象；
+
+```c++
+	explicit Entity(int age) 
+		:m_Name("Unknown"),m_Age(age) {}
+```
+
+### 41.operators and operator overloading（运算符和运算符重载）
