@@ -436,10 +436,10 @@ private:
 	std::string m_Name;
 	int m_Age;
 public:
-	Entity(int age) 
+	Entity(int age)
 		:m_Name("Unknown"),m_Age(age) {}
 
-	Entity(const std::string& name) 
+	Entity(const std::string& name)
 		:m_Name(name),m_Age(-1) {}
 };
 int main()
@@ -469,8 +469,104 @@ int main()
 可以通过在类前面增加显示关键字`explicit`使得不能通过隐式转换实例化对象；
 
 ```c++
-	explicit Entity(int age) 
+	explicit Entity(int age)
 		:m_Name("Unknown"),m_Age(age) {}
 ```
 
 ### 41.operators and operator overloading（运算符和运算符重载）
+
+运算符重载定义或更改运算符的操作，看一下实际操作；
+
+```c++
+#include <iostream>
+#include <string>
+
+struct Vector2
+{
+	float X, Y;
+	Vector2()
+		:X(0), Y(0) {}
+	Vector2(float x, float y)
+		:X(x), Y(y) {}
+	Vector2 Add(const Vector2& other) const 
+	{
+		return Vector2(X + other.X, Y + other.Y);
+	}
+	Vector2 operator+(const Vector2& other) const
+	{
+		return Add(other);
+	}
+	Vector2 Multiply(const Vector2& other) const
+	{
+		return Vector2(X * other.X, Y * other.Y);
+	}
+	Vector2 operator*(const Vector2& other) const
+	{
+		return Multiply(other);
+	}
+	bool operator==(const Vector2& other) const
+	{
+		return X == other.X && Y == other.Y;
+	}
+
+};
+std::ostream& operator<<(std::ostream& stream, const Vector2& other)
+{
+	stream << other.X << ", " << other.Y;
+	return stream;
+}
+
+int main()
+{
+	const Vector2 position(4.0f, 4.0f);
+	const Vector2 speed(0.5f, 1.5f);
+	const Vector2 powerup(1.1f, 1.1f);
+
+	Vector2 result1 = position.Add(speed.Multiply(powerup));
+	Vector2 result2 = position + speed * powerup;
+
+	std::cout << "result1: " << result1 << std::endl;
+	std::cout << "result2: " << result2 << std::endl;
+	std::cout << (result2 == result1) << std::endl;
+
+
+	std::cin.get();
+}
+```
+
+通过运算符重载，这里我们可以对我们创建的对象使用符号进行操作；
+
+### 42.`this`关键字
+
+`this`关键字是所在方法所属的当前实例对象的指针，只可以在方法中被引用；
+
+```c++
+#include <iostream>
+#include <string>
+
+class Entity
+{
+public:
+	int x, y;
+
+	Entity(int x, int y)
+	{
+		this->x = x;
+		this->y = y;
+	}
+	int GetX() const
+	{
+		return this->x;
+	}
+};
+
+int main()
+{
+	Entity entity(5, 5);
+	std::cout << entity.GetX() << std::endl;
+
+	std::cin.get();
+}
+```
+
+### 43.object lifetime （对象生命周期）
