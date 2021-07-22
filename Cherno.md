@@ -570,3 +570,174 @@ int main()
 ```
 
 ### 43.object lifetime （对象生命周期）
+
+基于堆栈的变量和基于堆的变量的对象生命周期是不一样的，一旦超过变量所在的的作用域基于堆栈的变量就被释放；
+
+```C++
+#include <iostream>
+#include <string>
+
+class Entity
+{
+public:
+	Entity()
+	{
+		std::cout << "Created Entity!" << std::endl;
+	}
+	~Entity()
+	{
+		std::cout << "Destroyed Entity!" << std::endl;
+	}
+};
+
+int main()
+{
+	{
+		Entity e;
+	}
+	std::cin.get();
+}
+```
+
+如上面的代码中，会在创建对象的时候使用构造函数，会在出了作用域的时候自动使用删除函数；因此不要在函数中创建一个基于堆栈的变量，然后返回它的指针，这样很明显是错误的；
+
+作用域指针（智能指针）代码示例：
+
+```c++
+#include <iostream>
+#include <string>
+
+class Entity
+{
+public:
+	Entity()
+	{
+		std::cout << "Created Entity!" << std::endl;
+	}
+	~Entity()
+	{
+		std::cout << "Destroyed Entity!" << std::endl;
+	}
+};
+
+class ScopedPtr
+{
+private:
+	Entity* m_Ptr;
+public:
+	ScopedPtr(Entity* ptr)
+		:m_Ptr(ptr)
+	{
+		
+	}
+	~ScopedPtr()
+	{
+		delete m_Ptr;
+	}
+};
+int main()
+{
+	{
+		ScopedPtr e(new Entity());
+	}
+
+	std::cin.get();
+}
+```
+
+这里的类`ScopedPtr`对象是基于堆栈创建的，会在出了作用域的时候自动销毁，而这也导致自动使用了销毁函数中的`delete m_Ptr`语句来删除创建在堆上的`Entity`对象；
+
+### 44.smart pointers（智能指针）
+
+**智能指针意味着当您调用`new`关键字时，不用调用`delete`关键字；甚至不用调用`new`关键字；**
+
+**unique pointer（唯一指针）：是一个作用域指针，意味着当该指针超出它所在的作用域的时候它将被销毁；且不能复制到另一个指针中去；**
+
+```c++
+#include <iostream>
+#include <string>
+#include <memory>
+
+class Entity
+{
+public:
+	Entity()
+	{
+		std::cout << "Created Entity!" << std::endl;
+	}
+	~Entity()
+	{
+		std::cout << "Destroyed Entity!" << std::endl;
+	}
+	void Print() {}
+};
+
+int main()
+{
+	{
+		std::unique_ptr<Entity> entity(new Entity());
+		std::unique_ptr<Entity> e = std::make_unique<Entity>();
+
+		entity->Print();
+		e->Print();
+	}
+
+	std::cin.get();
+}
+```
+
+如上述代码，一般有两种方法创建唯一指针，通常使用这里面的第二种；
+
+**shared pointer（共享指针）：通过引用计数跟踪您的指针有多少引用，当引用计数到零时，该指针被销毁；**
+
+```c++
+#include <iostream>
+#include <string>
+#include <memory>
+
+class Entity
+{
+public:
+	Entity()
+	{
+		std::cout << "Created Entity!" << std::endl;
+	}
+	~Entity()
+	{
+		std::cout << "Destroyed Entity!" << std::endl;
+	}
+	void Print() {}
+};
+
+int main()
+{
+	{
+		std::shared_ptr<Entity> e0;
+		{
+			std::shared_ptr<Entity> shareEntity = std::make_shared<Entity>();
+			e0 = shareEntity;
+		}
+	}
+
+
+	std::cin.get();
+}
+```
+
+可以通过在编译器中通过设置断点来查看具体运行情况；
+
+**weak pointer （弱指针）：把一个共享指针分配给共享指针时，引用计数会增加，但是把一个共享指针分配给弱指针时，引用计数不会增加；弱指针仅仅只记录该对象的地址；**
+
+```c++
+	{
+		std::weak_ptr<Entity> e0;
+		{
+			std::shared_ptr<Entity> shareEntity = std::make_shared<Entity>();
+			e0 = shareEntity;
+		}
+	}
+```
+
+当弱指针引用的原指针被销毁的时候，弱指针指向一个空的指针，无实际意义；
+
+### 45.coping and copy constructor（复制和复制构造函数）
