@@ -741,3 +741,92 @@ int main()
 当弱指针引用的原指针被销毁的时候，弱指针指向一个空的指针，无实际意义；
 
 ### 45.coping and copy constructor（复制和复制构造函数）
+
+在C++中复制通常是将一块内存中保存的二进制段直接复制到另一块内存中；
+
+```c++
+int i = 9;
+int j = i;
+j = 10;
+std::cout << i << ", " << j << std::endl;
+```
+
+这里通过复制一块内存到另一块内存中把9赋值给`j`，改变`j`的值并不会改变`i`的值；
+
+```c++
+int* i = new int;
+i = 9;
+int* j = i;
+j = 10;
+std::cout << *i << ", " << *j << std::endl;
+```
+
+这里虽然同样也是把一款内存中的二进制段复制到另一块内存中，即复制指针到`j`中，但是因为`i,j`中保存的指针为同一个，所以输出会出现一样的值；
+
+**复制构造函数：是复制自制类的一种好方法，因为类中通常会有指针，而直接复制一个类到另一个类中，在销毁其中一个类的时候会把之前分配给指针的内存也一起释放，这时另一个类就不能使用指针，因为已经在之前被释放掉了；**
+
+```c++
+#include <iostream>
+#include <string>
+
+class String
+{
+private:
+	char* m_Buffer;
+	unsigned int m_Size;
+public:
+	String(const char* srcString)
+	{
+		m_Size = strlen(srcString);
+		m_Buffer = new char[m_Size + 1];
+		memcpy(m_Buffer, srcString, m_Size + 1);
+	}
+	String(const String& other)
+		:m_Size(other.m_Size)
+	{
+		m_Buffer = new char[m_Size];
+		memcpy(m_Buffer, other.m_Buffer, other.m_Size + 1);
+	}
+
+	~String()
+	{
+		delete[] m_Buffer;
+	}
+	const char* GetString() const
+	{
+		return m_Buffer;
+	}
+	void AddEqual(const char* srcString)
+	{
+		char* tmp;
+
+		m_Size += strlen(srcString);
+		tmp = new char[m_Size];
+		memcpy(tmp, m_Buffer, strlen(m_Buffer));
+		memcpy(tmp + strlen(m_Buffer), srcString, strlen(srcString) + 1);
+		delete[] m_Buffer;
+		m_Buffer = tmp;
+	}
+	void operator+=(const char* srcString)
+	{
+		AddEqual(srcString);
+	}
+};
+std::ostream& operator<<(std::ostream& stream, const String& string)
+{
+	stream << string.GetString();
+	return stream;
+}
+
+int main()
+{
+	String name("gongzhihuang");
+	String second = name;
+
+	std::cout << second << std::endl;
+	std::cout << name << std::endl;
+
+	std::cin.get();
+}
+```
+
