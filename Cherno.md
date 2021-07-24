@@ -726,7 +726,7 @@ int main()
 
 可以通过在编译器中通过设置断点来查看具体运行情况；
 
-**weak pointer （弱指针）：把一个共享指针分配给共享指针时，引用计数会增加，但是把一个共享指针分配给弱指针时，引用计数不会增加；弱指针仅仅只记录该对象的地址；**
+**weak pointer （弱指针）：把一个共享指针分配给共享指针时，引用计数会增加，但是把一个共享指针分配给弱指针时，引用计数不会增加；弱指针仅仅只记录该对象的地址，不能通过弱指针来访问类中的成员函数；**
 
 ```c++
 	{
@@ -830,3 +830,184 @@ int main()
 }
 ```
 
+### 46.The arrow operator（箭头操作符）
+
+箭头操作符通常用在类指针上，可以通过指针来直接访问类成员函数，而不需要先解引用在访问成员函数；
+
+```c++
+#include <iostream>
+#include <string>
+
+class Entity
+{
+public:
+	void Print() const { std::cout << "Hello" << std::endl; }
+};
+
+int main()
+{
+	Entity e;
+	e.Print();
+	Entity* ptr = &e;
+	ptr->Print();
+
+	std::cin.get();
+}
+```
+
+还有进阶的用法，重载箭头操作符使得可以在自己做的智能指针中访问其中的类成员；
+
+```C++
+#include <iostream>
+#include <string>
+
+class Entity
+{
+public:
+	void Print() const { std::cout << "Hello" << std::endl; }
+};
+
+class ScopedPtr
+{
+private:
+	Entity* m_Obj;
+public:
+	ScpedPtr(Entity* e)
+		:m_Obj(e)
+	{}
+	~ScpedPtr()
+	{
+		delete m_Obj;
+	}
+	const Entity* GetEntity() const
+	{
+		return m_Obj;
+	}
+	const Entity* operator->() const
+	{
+		return m_Obj;
+	}
+};
+int main()
+{
+	ScopedPtr ptr = new Entity();
+	ptr.GetEntity()->Print();
+	ptr->Print();
+
+	std::cin.get();
+}
+```
+
+箭头操作符还可以来求成员变量的偏移量；
+
+```c++
+#include <iostream>
+#include <string>
+
+struct Vector3
+{
+	float x, y, z;
+};
+
+int main()
+{
+	const int offset = (int)&((Vector3*)nullptr)->x;
+	std::cout << offset << std::endl;
+
+	std::cin.get();
+}
+```
+
+### 47.Dynamic Arrry（动态数组）
+
+动态数组是和数组差不多的存储方式，但是当超过分配给动态数组的内存的时候会自动扩展内存，即分配一个更大的空间，把原来的数据都复制到新的空间中，然后把原来的空间给释放掉；在C++中有一个很重要的内置类型，也就是`vector`类，存储方式和动态数组一样，有很多有用的内置成员函数；
+
+```c++
+#include <iostream>
+#include <string>
+#include <vector>
+
+struct Vertex
+{
+	float x, y, z;
+};
+std::ostream& operator<< (std::ostream& stream, const Vertex& vertex)
+{
+	stream << vertex.x << ", " << vertex.y << ", " << vertex.z;
+	return stream;
+}
+int main()
+{
+	std::vector<Vertex> vertices;
+	vertices.push_back({ 1,2,3 });
+	vertices.push_back({ 4,5,6 });
+
+	for (unsigned i = 0; i < vertices.size(); i++)
+	{
+		std::cout << vertices[i] << std::endl;
+	}
+	for (const Vertex& v : vertices)
+	{
+		std::cout << v << std::endl;
+	}
+	vertices.erase(vertices.begin() + 1);
+	for (const Vertex& v : vertices)
+	{
+		std::cout << v << std::endl;
+	}
+
+	std::cin.get();
+}
+```
+
+在使用`vector`的时候通常使用引用而不是索引的方式来输出数据；
+
+### 48.optimize the usage of std::vector（优化使用向量）
+
+由于C++中默认的原因，我们往向量中添加元素是一个接一个的，所以我们通常预先评估我们需要的大小，然后通过内置函数`reserve`来提前扩充向量的空间，可以使得向量不用多次重新分配空间并复制值到新的内存中；
+
+```c++
+#include <iostream>
+#include <string>
+#include <vector>
+
+struct Vertex
+{
+	float x, y, z;
+	Vertex(float x, float y, float z)
+		:x(x), y(y), z(z)
+	{
+	}
+	Vertex(const Vertex& other)
+		:x(other.x), y(other.y), z(other.z)
+	{
+		std::cout << "Copy!" << std::endl;
+	}
+	~Vertex()
+	{}
+	
+};
+std::ostream& operator<< (std::ostream& stream, const Vertex& vertex)
+{
+	stream << vertex.x << ", " << vertex.y << ", " << vertex.z;
+	return stream;
+}
+int main()
+{
+	std::vector<Vertex> vertices;
+	vertices.reserve(3);
+	vertices.emplace_back(1, 2, 3);
+	vertices.emplace_back(4, 5, 6);
+	vertices.emplace_back(7, 8, 9);
+	for (const Vertex& v : vertices)
+	{
+		std::cout << v << std::endl;
+	}
+
+	std::cin.get();
+}
+```
+
+这里的内置`emplace_back`函数使得向量所在的内存直接创建这么一个`Vertex`，而不用和内置`push_back`函数一样先创建一个`Vertex`，然后再复制到向量中去；
+
+### 49.
