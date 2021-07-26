@@ -1010,4 +1010,138 @@ int main()
 
 这里的内置`emplace_back`函数使得向量所在的内存直接创建这么一个`Vertex`，而不用和内置`push_back`函数一样先创建一个`Vertex`，然后再复制到向量中去；
 
-### 49.
+### 49.using libraries（使用库）
+
+具体操作看[视频]([[中英字幕\] C++_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1Ay4y1i7Z6?p=49))
+
+### 50.using dynamic libraries（使用动态库）
+
+具体操作看[视频]([[中英字幕\] C++_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1Ay4y1i7Z6?p=50))
+
+### 51.making and working with libraries（制作和使用库）
+
+具体操作看[视频]([[中英字幕\] C++_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1Ay4y1i7Z6?p=51))
+
+### 52.deal with multipe return values（处理多个返回值）
+
+一、可以通过传递引用间接返回了值，返回值类型相不相同都可以
+
+```c++
+#include <iostream>
+
+
+void ReturnVelues(std::string& str0, std::string& str1)
+{
+	str0 = "Hello ";
+	str1 = "World!";
+}
+
+int main()
+{
+	std::string str0;
+	std::string str1;
+	ReturnVelues(str0, str1);
+
+	std::cout << str0 << str1 << std::endl;
+	std::cin.get();
+}
+```
+
+二、通过传递指针来间接返回值，返回值类型相不相同都可以
+
+```c++
+#include <iostream>
+
+
+void ReturnVelues(std::string* str0, std::string* str1)
+{
+	*str0 = "Hello ";
+	*str1 = "World!";
+}
+
+int main()
+{
+	std::string str0;
+	std::string str1;
+	ReturnVelues(&str0, &str1);
+
+	std::cout << str0 << str1 << std::endl;
+	td::cin.get();
+}
+```
+
+三、当返回的值类型相同时可以通过返回标准数组实现
+
+```c++
+#include <iostream>
+#include <array>
+
+std::array<std::string, 2>  ReturnVelues(void)
+{
+	std::array<std::string, 2> results;
+	results[0] = "Hello ";
+	results[1] = "World!";
+	return results;
+}
+
+int main()
+{
+	std::array<std::string, 2> res = ReturnVelues();
+	std::cout << res[0] << res[1] <<  std::endl;
+	std::cin.get();
+}
+```
+
+注意不要使用普通的数组来实现，因为虽然也能返回一个数组，但是我们不知道之歌数组的大小，所以基本无意义
+
+四、当返回的值类型相同时可以通过向量实现
+
+```c++
+#include <iostream>
+#include <vector>
+
+std::vector<std::string>  ReturnVelues(void)
+{
+	std::vector<std::string> results;
+	results.reserve(2);
+	results.emplace_back("Hello ");
+	results.emplace_back("World!");
+
+	return results;
+}
+
+int main()
+{
+	std::vector<std::string> res = ReturnVelues();
+	for (std::string v : res)
+		std::cout << v  << std::endl;
+	std::cin.get();
+}
+```
+
+
+
+五、当返回的值类型不相同时可以使用（tuple）元组来实现，返回值类型相同时也可以使用，
+
+```c++
+#include <iostream>
+#include <tuple>
+#include <string>
+#include <vector>
+
+std::tuple<std::string, int>  ReturnVelues(void)
+{
+	std::tuple<std::string, int> results{ "Hello World!", 32 };
+
+	return results;
+}
+
+int main()
+{
+	std::tuple<std::string, int> res = ReturnVelues();
+	std::cout << std::get<0>(res) << std::get<1>(res) << std::endl;
+	std::cin.get();
+}
+```
+
+注意这里写的代码中所有的对象都是创建堆栈中的；在返回类型不同时，可以通过创建一个含有所有你想返回类型的`struct`，可以清楚的知道返回的类型是什么，这个例子的代码就忽略了；
