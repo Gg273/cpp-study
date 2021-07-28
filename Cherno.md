@@ -1121,7 +1121,7 @@ int main()
 
 
 
-五、当返回的值类型不相同时可以使用（tuple）元组来实现，返回值类型相同时也可以使用，
+五、当返回的值类型不相同时可以使用（tuple）元组来实现，返回值类型相同时也可以使用，在C++中元组是一种组合类型，其中可以添加多种类型；
 
 ```c++
 #include <iostream>
@@ -1145,3 +1145,91 @@ int main()
 ```
 
 注意这里写的代码中所有的对象都是创建堆栈中的；在返回类型不同时，可以通过创建一个含有所有你想返回类型的`struct`，可以清楚的知道返回的类型是什么，这个例子的代码就忽略了；
+
+### 53.templates（模板）
+
+由于在C++中常常使用不同的类型作为同一种功能的参数所以会导致创建多种同样功能的函数仅仅是不同的参数类型
+
+```c++
+#include <iostream>
+
+void Print(int value)
+{
+	std::cout << value << std::endl;
+}
+void Print(float value)
+{
+	std::cout << value << std::endl;
+}
+void Print(std::string value)
+{
+	std::cout << value << std::endl;
+}
+
+int main()
+{
+	Print(5);
+	Print(5.5f);
+	Print("Hello World!");
+
+	std::cin.get();
+}
+```
+
+所以推出一种叫做模板（template）的概念，使用模板可以使得代码量大大减少，实际上这只是一种编译过程中的简化，在实际调用函数的过程中会创建出和上面的代码中一样的`Print`函数；注意只有在调用某种类型参数的函数才会创建出使用该种类型参数的函数；
+
+```c++
+#include <iostream>
+
+template<typename T>
+void Print(T value)
+{
+	std::cout << value << std::endl;
+}
+
+
+int main()
+{
+	Print(5);
+	Print(5.5f);
+	Print("Hello World!");
+
+	std::cin.get();
+}
+```
+
+模板不止可以用在类型名中，也可以使用在整型中，浮点型···
+
+```c++
+#include <iostream>
+
+template<typename T, int N>
+class Array
+{
+private:
+	T m_Array[N];
+public:
+	int ReturnSize()const
+	{
+		return N;
+	}
+};
+
+
+int main()
+{
+	Array<std::string, 10> array;
+	std::cout << array.ReturnSize() << std::endl;
+
+	std::cin.get();
+}
+```
+
+在实际运用是应该适当使用模板；
+
+### 54.stack vs heap memory in C++（C++中的堆栈和堆内存）
+
+堆栈和堆其实都是位于内存（memory）中的，这两者之间的差距主要是在性能差异，由于在堆栈中分配内存很快，其实仅仅只是改变了栈指针的大小，所以非常迅速，而在堆中分配内存需要一系列的操作，比如先在堆内存中找出一块合适大小的内存在进行分配，花费时间较多；
+
+
+### 55.Macros（宏）
